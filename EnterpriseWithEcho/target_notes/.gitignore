@@ -1,0 +1,3 @@
+target_notes
+vendor/*
+!vendor/vendor.json

@@ -1,0 +1,16 @@
+driver: "mysql"
+  prod:
+    db: "targetNotes"
+    user: "root"
+    password: "admin123"
+    port: 5432
+  dev:
+    db: "targetNotes_dev"
+    user: "root"
+    password: "admin123"
+    port: 5432
+  test:
+    db: "targetNotes_test"
+    user: "root"
+    password: "admin123"
+    port: 5432
