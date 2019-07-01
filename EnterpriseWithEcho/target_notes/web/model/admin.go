@@ -5,7 +5,7 @@ import "time"
 type Admin struct {
 	base        `xorm:"extends"`
 	AccountName string `xorm:"varchar(12)" json:"account_name"`
-	Phone       string `xorm:"varchar(11)" json:"phone"`
+	Password    string `xorm:"varchar(255)" json:"password"`
 	Token       string `xorm:"text" json:"token"`
 }
 
@@ -17,7 +17,7 @@ type AdminSerializer struct {
 	Id          int64     `json:"id"`
 	CreatedAt   time.Time `json:"created_at"`
 	AccountName string    `json:"account_name"`
-	Phone       string    `json:"phone"`
+	Password    string    `json:"password"`
 	Token       string    `json:"token"`
 }
 
@@ -26,7 +26,7 @@ func (a Admin) Serializer() AdminSerializer {
 		Id:          a.Id,
 		CreatedAt:   a.CreatedAt,
 		AccountName: a.AccountName,
-		Phone:       a.Phone,
+		Password:    a.Password,
 		Token:       a.Token,
 	}
 }

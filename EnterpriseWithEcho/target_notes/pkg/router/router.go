@@ -1,6 +1,7 @@
 package router
 
 import (
+	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/wish"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -19,5 +20,12 @@ func RouteCollection() {
 		result["data"] = "pong"
 		return context.JSON(http.StatusOK, result)
 	})
+
+	group := e.Group("/v1/api")
+	wish.Register(group)
+
 	e.Logger.Fatal(e.Start(":7200"))
+}
+
+func Middleware(h http.Header) {
 }

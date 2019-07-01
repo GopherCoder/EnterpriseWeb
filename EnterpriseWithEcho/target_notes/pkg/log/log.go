@@ -9,7 +9,7 @@ import (
 
 const PROJECT = "./EnterpriseWeb/EnterpriseWithEcho/target_notes/log/target_notes"
 
-var logger *log.Logger
+var Logger *log.Logger
 var loggerName string
 var err error
 var LoggerFile *os.File
@@ -22,6 +22,6 @@ func LOGInit() {
 		panic("Can Not Open Log File In Dir Of Log.")
 	}
 	projectName := strings.Split(PROJECT, "/")[3] + " "
-	logger = log.New(LoggerFile, projectName, log.LstdFlags)
-	logger.Println("Start log.")
+	Logger = log.New(LoggerFile, projectName, log.LstdFlags)
+	Logger.Println("Start log.")
 }
