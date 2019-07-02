@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-const PROJECT = "./EnterpriseWeb/EnterpriseWithEcho/target_notes/log/target_notes"
+var GOPATH = os.Getenv("GOPATH")
+var PROJECT = GOPATH + "/src" + "/EnterpriseWeb/EnterpriseWithEcho/target_notes/log/target_notes"
 
 var Logger *log.Logger
 var loggerName string

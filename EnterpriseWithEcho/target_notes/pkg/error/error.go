@@ -14,7 +14,9 @@ func (e ErrorTarget) Error() string {
 }
 
 var (
-	ParamErrorTarget  = ErrorTarget{Code: 400, Message: "param bind fail", Detail: "请求参数错误"}
-	ValidErrorTarget  = ErrorTarget{Code: 400, Message: "param valid fail", Detail: "参数无效"}
-	InsertErrorTarget = ErrorTarget{Code: 400, Message: "insert one record fail", Detail: "数据库插入数据错误"}
+	ParamErrorTarget    = ErrorTarget{Code: 400, Message: "param bind fail", Detail: "请求参数错误"}
+	ValidErrorTarget    = ErrorTarget{Code: 400, Message: "param valid fail", Detail: "参数无效"}
+	InsertErrorTarget   = ErrorTarget{Code: 400, Message: "insert one record fail", Detail: "数据库插入数据错误"}
+	PassWordErrorTarget = ErrorTarget{Code: 400, Message: "password is not correct", Detail: "密码不匹配"}
+	RecordErrorTarget   = ErrorTarget{Code: 400, Message: "record not found", Detail: "记录不存在"}
 )
