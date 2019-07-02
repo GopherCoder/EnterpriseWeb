@@ -30,5 +30,6 @@ func models() []interface{} {
 	return []interface{}{
 		new(model.Target),
 		new(model.Admin),
+		new(model.Wish),
 	}
 }

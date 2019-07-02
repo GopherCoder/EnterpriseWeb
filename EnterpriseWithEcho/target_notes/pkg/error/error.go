@@ -19,4 +19,6 @@ var (
 	InsertErrorTarget   = ErrorTarget{Code: 400, Message: "insert one record fail", Detail: "数据库插入数据错误"}
 	PassWordErrorTarget = ErrorTarget{Code: 400, Message: "password is not correct", Detail: "密码不匹配"}
 	RecordErrorTarget   = ErrorTarget{Code: 400, Message: "record not found", Detail: "记录不存在"}
+	UpdateErrorTarget   = ErrorTarget{Code: 400, Message: "update field fail", Detail: "更新数据失败"}
+	DeleteErrorTarget   = ErrorTarget{Code: 400, Message: "delete fail", Detail: "删除记录失败"}
 )

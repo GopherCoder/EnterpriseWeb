@@ -6,6 +6,8 @@ import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/wish"
 	"net/http"
 
+	"github.com/labstack/gommon/log"
+
 	middle "github.com/labstack/echo/middleware"
 
 	"github.com/labstack/echo"
@@ -19,10 +21,14 @@ func RouteCollection() {
 	e := echo.New()
 	e.Pre(middle.MethodOverride())
 
-	e.Use(middle.Logger())
 	e.Use(middle.Recover())
 	e.Use(middle.CORS())
 	e.Use(middle.BodyLimit("2M"))
+	e.Use(middle.Logger())
+	if l, ok := e.Logger.(*log.Logger); ok {
+		l.SetHeader("${time_rfc3339} ${level} ${line}")
+	}
+	e.Debug = true
 
 	e.GET("/ping", func(context echo.Context) error {
 		var result map[string]interface{}
@@ -42,7 +48,4 @@ func RouteCollection() {
 	}
 
 	e.Logger.Fatal(e.Start(":7200"))
-}
-
-func Middleware(h http.Header) {
 }

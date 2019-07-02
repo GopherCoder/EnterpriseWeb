@@ -81,7 +81,9 @@ type WishSerializers []WishSerializer
 
 var getLevel = func(level int) int {
 	var resultLevel int
-	if level <= 2 {
+	if level < 0 {
+		resultLevel = -1
+	} else if level <= 2 && level >= 0 {
 		resultLevel = 0
 	} else if level > 2 && level <= 5 {
 		resultLevel = 1

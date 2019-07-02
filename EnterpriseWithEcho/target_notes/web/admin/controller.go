@@ -3,8 +3,8 @@ package admin
 import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/database"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/error"
-	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/make"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/model"
+	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/result"
 	"fmt"
 	"log"
 	"net/http"
@@ -38,7 +38,6 @@ func registerHandler(c echo.Context) error {
 		Password:    string(password),
 		Token:       generateToken(20),
 	}
-	log.Println("Admin", admin)
 	tx := database.Engine.NewSession()
 	defer tx.Close()
 	tx.Begin()
@@ -58,25 +57,25 @@ func loginHandler(c echo.Context) error {
 	if err := c.Bind(&param); err != nil {
 		bindError := error_target_notes.ParamErrorTarget
 		bindError.Report = err.Error()
-		return bindError
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, bindError)
 	}
 	if err := param.Valid(); err != nil {
 		invalidError := error_target_notes.ValidErrorTarget
 		invalidError.Report = err.Error()
-		return invalidError
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, invalidError)
 	}
 
 	var admin model.Admin
 	if _, dbError := database.Engine.Where("account_name = ?", param.AccountName).Get(&admin); dbError != nil {
 		dbErr := error_target_notes.RecordErrorTarget
 		dbErr.Report = dbError.Error()
-		return dbError
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
 	}
 
 	if ok := compareHashAndPassword([]byte(admin.Password), []byte(param.Password)); !ok {
 		passwordErr := error_target_notes.PassWordErrorTarget
 		passwordErr.Report = fmt.Sprintf("password is not correct")
-		return passwordErr
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, passwordErr)
 	}
 
 	return make_result.ResponseWithJson(c, http.StatusOK, admin.Serializer())
