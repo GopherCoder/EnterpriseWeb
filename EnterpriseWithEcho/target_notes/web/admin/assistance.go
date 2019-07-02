@@ -7,8 +7,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func generateFromPassword(password string, cost int) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), cost)
+func generateFromPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
 
 func compareHashAndPassword(hashed []byte, password []byte) bool {

@@ -29,14 +29,16 @@ func registerHandler(c echo.Context) error {
 
 	log.Println("valid", param)
 
-	password, _ := generateFromPassword(param.Password, 20)
+	password, _ := generateFromPassword(param.Password)
 
+	log.Println("Password", string(password))
 	var admin model.Admin
 	admin = model.Admin{
 		AccountName: param.AccountName,
 		Password:    string(password),
 		Token:       generateToken(20),
 	}
+	log.Println("Admin", admin)
 	tx := database.Engine.NewSession()
 	defer tx.Close()
 	tx.Begin()
@@ -46,6 +48,7 @@ func registerHandler(c echo.Context) error {
 		dbErr.Report = dbError.Error()
 		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbError)
 	}
+	log.Println("Insert", "Insert successful")
 	tx.Commit()
 	return make_result.ResponseWithJson(c, http.StatusOK, admin.Serializer())
 }
