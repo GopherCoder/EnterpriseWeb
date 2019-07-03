@@ -166,6 +166,15 @@ func patchWish(c echo.Context) error {
 	if param.Data.Hope != "" {
 		wish.Hope = param.Data.Hope
 	}
+	if param.Data.TargetId != 0 {
+		var target model.Target
+		if ok, dbError := tx.ID(param.Data.TargetId).Get(&target); !ok && dbError != nil {
+			err := error_target_notes.RecordErrorTarget
+			err.Report = dbError.Error()
+			return make_result.ResponseWithJson(c, http.StatusBadRequest, err)
+		}
+		wish.TargetId = target.Id
+	}
 	wish.DesireLevel = param.Data.DesireLevel
 	wish.ChallengeLevel = param.Data.ChallengeLevel
 	wish.TimeLevel = param.Data.TimeLevel

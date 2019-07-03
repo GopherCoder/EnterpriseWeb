@@ -18,3 +18,7 @@ func ResponseWithJson(c echo.Context, statusOk int, data interface{}) error {
 		return c.JSON(statusOk, response)
 	}
 }
+
+func DefaultNilResponseWithJson(c echo.Context) error {
+	return ResponseWithJson(c, http.StatusOK, nil)
+}

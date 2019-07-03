@@ -18,6 +18,7 @@ type patchWishParam struct {
 	Data struct {
 		Title          string `json:"title"`
 		Hope           string `json:"hope"`
+		TargetId       int    `json:"target_id" validate:"min=0"`
 		DesireLevel    int    `json:"desire_level" validate:"min=0,max=9"`
 		ChallengeLevel int    `json:"challenge_level" validate:"min=0,max=9"`
 		TimeLevel      int    `json:"time_level" validate:"min=0,max=9"`
