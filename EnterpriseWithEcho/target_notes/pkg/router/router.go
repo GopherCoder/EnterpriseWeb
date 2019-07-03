@@ -3,6 +3,7 @@ package router
 import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/middleware"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/admin"
+	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/target"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/wish"
 	"net/http"
 
@@ -44,6 +45,7 @@ func RouteCollection() {
 	group := e.Group("/v1/api", middleware.Auth)
 
 	{
+		target.Register(group)
 		wish.Register(group)
 	}
 

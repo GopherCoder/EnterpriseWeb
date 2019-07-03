@@ -47,6 +47,18 @@ func registerHandler(c echo.Context) error {
 		dbErr.Report = dbError.Error()
 		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbError)
 	}
+
+	var target model.Target
+	target = model.Target{
+		AdminId: admin.Id,
+		Title:   "其他",
+		Level:   model.NORMAL,
+	}
+	if _, dbError := tx.InsertOne(&target); dbError != nil {
+		tx.Rollback()
+		return make_result.DefaultErrorDataBaseWithJson(c, error_target_notes.InsertErrorTarget, dbError)
+	}
+
 	log.Println("Insert", "Insert successful")
 	tx.Commit()
 	return make_result.ResponseWithJson(c, http.StatusOK, admin.Serializer())

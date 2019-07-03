@@ -1,12 +1,18 @@
 package model
 
-import "time"
+import (
+	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/database"
+	"time"
+)
 
 type Task struct {
-	base         `xorm:"extends"`
-	AdminId      int64
-	MissionIds   []int64 `xorm:"blob" json:"mission"`              // 任务
-	Acquaintance string  `xorm:"varchar(255)" json:"acquaintance"` // 感悟
+	base        `xorm:"extends"`
+	TargetId    int64
+	Description string  `xorm:"varchar(32)" json:"description"`
+	Title       string  `xorm:"varchar(32)" json:"title"`
+	ThingIds    []int64 `xorm:"blob" json:"thing_ids"`
+	Status      int     `xorm:"int(1)" json:"status"`
+	OrderLevel  int     `xorm:"int(2)" json:"order_level"`
 }
 
 func (t Task) TableName() string {
@@ -14,19 +20,50 @@ func (t Task) TableName() string {
 }
 
 type TaskSerializer struct {
-	Id           int64        `json:"id"`
-	CreatedAt    time.Time    `json:"created_at"`
-	WeekDay      time.Weekday `json:"weekday"`
-	MissionIds   []int64      `json:"mission_ids"`
-	Acquaintance string       `json:"acquaintance"`
+	Id         int64     `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	TargetName string    `json:"target_name"`
+	Title      string    `json:"title"`
+	Things     []Things  `json:"things"`
+	Status     string    `json:"status"`
 }
 
-func (t TaskSerializer) Serializer() TaskSerializer {
+func (t Task) Serializer() TaskSerializer {
+
+	var target Target
+	database.Engine.ID(t.TargetId).Get(&target)
+	var things []Things
+	database.Engine.In("id", t.ThingIds).Find(&things)
+
 	return TaskSerializer{
-		Id:           t.Id,
-		CreatedAt:    t.CreatedAt,
-		WeekDay:      t.CreatedAt.Weekday(),
-		MissionIds:   t.MissionIds,
-		Acquaintance: t.Acquaintance,
+		Id:         t.Id,
+		CreatedAt:  t.CreatedAt,
+		TargetName: target.Title,
+		Title:      t.Title,
+		Things:     things,
+		Status:     status(t.Status),
+	}
+}
+
+type Things struct {
+	base        `xorm:"extends"`
+	Description string `xorm:"text" json:"description"`
+}
+
+func (t Things) TableName() string {
+	return "targetNotes_things"
+}
+
+type ThingsSerializer struct {
+	Id          int64     `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	Description string    `json:"description"`
+}
+
+func (t Things) Serializer() ThingsSerializer {
+	return ThingsSerializer{
+		Id:          t.Id,
+		CreatedAt:   t.CreatedAt,
+		Description: t.Description,
 	}
 }
