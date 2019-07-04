@@ -32,5 +32,6 @@ func models() []interface{} {
 		new(model.Admin),
 		new(model.Wish),
 		new(model.Task),
+		new(model.Things),
 	}
 }

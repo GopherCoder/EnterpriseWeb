@@ -127,7 +127,7 @@ func patchOneTaskHandler(c echo.Context) error {
 	return make_result.ResponseWithJson(c, http.StatusOK, task.Serializer())
 }
 
-func deleteOneTaskHandle(c echo.Context) error {
+func deleteOneTaskHandler(c echo.Context) error {
 
 	otherTarget := middleware.CurrentOtherTarget(c)
 	taskId := c.Param("task_id")
@@ -207,4 +207,65 @@ func orderTaskHandler(c echo.Context) error {
 		result = append(result, i.Serializer())
 	}
 	return make_result.ResponseWithJson(c, http.StatusOK, result)
+}
+
+func patchOneThingHandler(c echo.Context) error {
+	taskId := c.Param("task_id")
+
+	var param patchThingParam
+	if err := c.Bind(&param); err != nil {
+		bindErr := error_target_notes.ParamErrorTarget
+		bindErr.Report = err.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, bindErr)
+	}
+
+	if err := make_result.DefaultErrorResponseWithJson(c, param); err != nil {
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, err)
+	}
+
+	tx := database.Engine.NewSession()
+	defer tx.Close()
+	tx.Begin()
+
+	var task model.Task
+	if _, dbError := tx.ID(taskId).Get(&task); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+
+	for _, i := range param.Data {
+		if i.Id == 0 {
+			// create : 插入 task
+			var thing model.Things
+			thing.Description = i.Description
+			if _, dbError := tx.InsertOne(&thing); dbError != nil {
+				tx.Rollback()
+				dbErr := error_target_notes.InsertErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+			task.ThingIds = append(task.ThingIds, thing.Id)
+			if _, dbError := tx.ID(taskId).Cols("thing_ids").Update(&task); dbError != nil {
+				tx.Rollback()
+				dbErr := error_target_notes.UpdateErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+
+			}
+		} else {
+			// update:
+			thing := new(model.Things)
+			thing.Description = i.Description
+			if _, dbError := tx.ID(i.Id).Cols("description").Update(&thing); dbError != nil {
+				tx.Rollback()
+				dbErr := error_target_notes.UpdateErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+		}
+	}
+	tx.Commit()
+	return make_result.ResponseWithJson(c, http.StatusOK, task.Serializer())
+
 }

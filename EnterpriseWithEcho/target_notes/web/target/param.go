@@ -33,3 +33,14 @@ type patchOrderParam struct {
 func (p patchOrderParam) Valid() error {
 	return validator.New().Struct(p)
 }
+
+type patchThingParam struct {
+	Data []struct {
+		Id          int64  `json:"id"`
+		Description string `json:"description"`
+	} `json:"data" validate:"min=1"`
+}
+
+func (p patchThingParam) Valid() error {
+	return validator.New().Struct(p)
+}
