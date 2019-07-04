@@ -21,4 +21,5 @@ var (
 	RecordErrorTarget   = ErrorTarget{Code: 400, Message: "record not found", Detail: "记录不存在"}
 	UpdateErrorTarget   = ErrorTarget{Code: 400, Message: "update field fail", Detail: "更新数据失败"}
 	DeleteErrorTarget   = ErrorTarget{Code: 400, Message: "delete fail", Detail: "删除记录失败"}
+	RightErrorTarget    = ErrorTarget{Code: 400, Message: "no right of this router", Detail: "权限不允许"}
 )

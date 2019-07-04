@@ -3,6 +3,7 @@ package router
 import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/middleware"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/admin"
+	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/aim"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/target"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/wish"
 	"net/http"
@@ -46,6 +47,7 @@ func RouteCollection() {
 
 	{
 		target.Register(group)
+		aim.Register(group)
 		wish.Register(group)
 	}
 
