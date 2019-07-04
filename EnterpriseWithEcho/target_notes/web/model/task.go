@@ -38,9 +38,9 @@ func (t Task) Serializer() TaskSerializer {
 	log.Println(target.TaskIds, "task_ids")
 
 	var things []Things
-	err := database.Engine.In("id", t.ThingIds).Find(&things)
+	database.Engine.In("id", t.ThingIds).Find(&things)
 
-	log.Println(t.ThingIds, err)
+	log.Println(t.ThingIds)
 
 	var th []ThingsSerializer
 	for _, i := range things {
