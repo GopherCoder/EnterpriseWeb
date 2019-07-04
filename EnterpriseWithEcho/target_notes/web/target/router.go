@@ -4,6 +4,7 @@ import "github.com/labstack/echo"
 
 func Register(e *echo.Group) {
 	e.GET("/other", getOtherTargetHandler)
+	e.GET("/other/task/:task_id", getOneTaskHandler)
 	e.POST("/other/task", createOneTaskHandler)
 	e.PATCH("/other/task/:task_id", patchOneTaskHandler)
 	e.DELETE("/other/task/:task_id", deleteOneTaskHandle)

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -17,7 +18,19 @@ import (
 func getOtherTargetHandler(c echo.Context) error {
 	otherTarget := middleware.CurrentOtherTarget(c)
 
+	log.Println("taskIds: ", otherTarget.TaskIds)
 	return make_result.ResponseWithJson(c, http.StatusOK, otherTarget.SerializerWithTaskTitle())
+}
+
+func getOneTaskHandler(c echo.Context) error {
+	taskId := c.Param("task_id")
+	var task model.Task
+	if _, dbError := database.Engine.ID(taskId).Get(&task); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+	return make_result.ResponseWithJson(c, http.StatusOK, task.Serializer())
 }
 
 func createOneTaskHandler(c echo.Context) error {
@@ -140,11 +153,58 @@ func deleteOneTaskHandle(c echo.Context) error {
 		tx.Rollback()
 		return make_result.DefaultErrorDataBaseWithJson(c, error_target_notes.DeleteErrorTarget, dbError)
 	}
+
+	if len(task.ThingIds) != 0 {
+		for _, i := range task.ThingIds {
+			tx.ID(i).Delete(new(model.Things))
+		}
+	}
+
 	tx.Commit()
 	return make_result.ResponseWithJson(c, http.StatusOK, task.Serializer())
 }
 
 func orderTaskHandler(c echo.Context) error {
+	var params patchOrderParam
 
-	return make_result.DefaultNilResponseWithJson(c)
+	if err := c.Bind(&params); err != nil {
+		paramErr := error_target_notes.ParamErrorTarget
+		paramErr.Report = err.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, paramErr)
+	}
+
+	if err := make_result.DefaultErrorResponseWithJson(c, params); err != nil {
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, err)
+	}
+
+	otherTarget := middleware.CurrentOtherTarget(c)
+	taskIds := otherTarget.TaskIds
+	var taskIdsInt []int
+	for _, i := range taskIds {
+		taskIdsInt = append(taskIdsInt, int(i))
+	}
+
+	sort.Ints(taskIdsInt)
+
+	tx := database.Engine.NewSession()
+	defer tx.Close()
+	tx.Begin()
+
+	for index, i := range params.Data.TaskIds {
+		if _, dbError := tx.Table(new(model.Task)).ID(i).Update(map[string]interface{}{"order_level": taskIdsInt[index]}); dbError != nil {
+			tx.Rollback()
+			dbErr := error_target_notes.UpdateErrorTarget
+			dbErr.Report = dbError.Error()
+			return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+		}
+	}
+	var tasks []model.Task
+	tx.In("id", params.Data.TaskIds).OrderBy("order_level").Desc("order_level").Find(&tasks)
+	tx.Commit()
+
+	var result []model.TaskSerializer
+	for _, i := range tasks {
+		result = append(result, i.Serializer())
+	}
+	return make_result.ResponseWithJson(c, http.StatusOK, result)
 }

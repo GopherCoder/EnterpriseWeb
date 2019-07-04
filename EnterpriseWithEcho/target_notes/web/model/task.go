@@ -20,12 +20,13 @@ func (t Task) TableName() string {
 }
 
 type TaskSerializer struct {
-	Id         int64     `json:"id"`
-	CreatedAt  time.Time `json:"created_at"`
-	TargetName string    `json:"target_name"`
-	Title      string    `json:"title"`
-	Things     []Things  `json:"things"`
-	Status     string    `json:"status"`
+	Id          int64     `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	TargetName  string    `json:"target_name"`
+	Description string    `json:"description"`
+	Title       string    `json:"title"`
+	Things      []Things  `json:"things"`
+	Status      string    `json:"status"`
 }
 
 func (t Task) Serializer() TaskSerializer {
@@ -36,12 +37,13 @@ func (t Task) Serializer() TaskSerializer {
 	database.Engine.In("id", t.ThingIds).Find(&things)
 
 	return TaskSerializer{
-		Id:         t.Id,
-		CreatedAt:  t.CreatedAt,
-		TargetName: target.Title,
-		Title:      t.Title,
-		Things:     things,
-		Status:     status(t.Status),
+		Id:          t.Id,
+		CreatedAt:   t.CreatedAt,
+		TargetName:  target.Title,
+		Description: t.Description,
+		Title:       t.Title,
+		Things:      things,
+		Status:      status(t.Status),
 	}
 }
 

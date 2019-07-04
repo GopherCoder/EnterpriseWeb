@@ -25,7 +25,9 @@ func (p patchTaskParam) Valid() error {
 }
 
 type patchOrderParam struct {
-	TaskIds []int `json:"task_ids" validate:"required"`
+	Data struct {
+		TaskIds []int `json:"task_ids"`
+	} `json:"data" validate:"required"`
 }
 
 func (p patchOrderParam) Valid() error {

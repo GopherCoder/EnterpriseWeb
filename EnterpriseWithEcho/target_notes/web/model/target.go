@@ -2,6 +2,7 @@ package model
 
 import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/database"
+	"log"
 	"time"
 )
 
@@ -101,7 +102,9 @@ func (t Target) Serializer() TargetSerializer {
 
 func (t Target) SerializerWithTaskTitle() TargetSerializerWithTaskTitle {
 	var tasks []Task
-	database.Engine.In("id", t.TaskIds).Find(&tasks)
+	if dbError := database.Engine.In("id", t.TaskIds).OrderBy("order_level").Desc("order_level").Find(&tasks); dbError != nil {
+		log.Println("dbError: ", dbError.Error())
+	}
 	var taskCollections []OneTask
 	for _, i := range tasks {
 		var one OneTask
