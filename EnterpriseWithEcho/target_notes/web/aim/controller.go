@@ -6,6 +6,7 @@ import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/pkg/middleware"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/model"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/result"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,11 +16,33 @@ import (
 )
 
 func getAllAimsHandler(c echo.Context) error {
-	return make_result.DefaultNilResponseWithJson(c)
+
+	adminId := middleware.CurrentAdminId(c)
+
+	var aims []model.Target
+
+	if dbError := database.Engine.Alias("t").Where("t.admin_id = ? AND t.title <> '其他'", adminId).Find(&aims); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+	var results []model.TargetSerializerWithTaskTitle
+	for _, i := range aims {
+		results = append(results, i.SerializerWithTaskTitle())
+	}
+	return make_result.ResponseWithJson(c, http.StatusOK, results)
 }
 
 func getOneAimHandler(c echo.Context) error {
-	return make_result.DefaultNilResponseWithJson(c)
+	aimId := c.Param("aim_id")
+	var aim model.Target
+	if _, dbError := database.Engine.ID(aimId).Get(&aim); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+
+	return make_result.ResponseWithJson(c, http.StatusOK, aim.SerializerWithTaskTitle())
 }
 
 func createAimHandler(c echo.Context) error {
@@ -120,5 +143,164 @@ func patchAimHandler(c echo.Context) error {
 }
 
 func deleteAimHandler(c echo.Context) error {
-	return make_result.DefaultNilResponseWithJson(c)
+	aimId := c.Param("aim_id")
+	var aim model.Target
+	tx := database.Engine.NewSession()
+	defer tx.Close()
+	tx.Begin()
+	if _, dbError := tx.ID(aimId).Get(&aim); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+	if len(aim.TaskIds) != 0 {
+		var things []model.Things
+		if dbError := tx.In("id", aim.TaskIds).Find(&things); dbError != nil {
+			dbErr := error_target_notes.RecordErrorTarget
+			dbErr.Report = dbError.Error()
+			return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+		}
+		if len(things) != 0 {
+			for _, i := range things {
+				if _, dbError := tx.ID(i.Id).Delete(&i); dbError != nil {
+					tx.Rollback()
+					dbErr := error_target_notes.DeleteErrorTarget
+					dbErr.Report = dbError.Error()
+					return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+				}
+			}
+		}
+
+	}
+
+	if _, dbError := tx.ID(aimId).Delete(&aim); dbError != nil {
+		dbErr := error_target_notes.DeleteErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+	tx.Commit()
+	return make_result.ResponseWithJson(c, http.StatusOK, aim.SerializerWithTaskTitle())
+}
+
+func patchAimThingsHandler(c echo.Context) error {
+	aimId := c.Param("aim_id")
+	taskId := c.Param("task_id")
+	otherTarget := middleware.CurrentOtherTarget(c)
+
+	var param pathThingsParam
+	if err := c.Bind(&param); err != nil {
+		bindErr := error_target_notes.ParamErrorTarget
+		bindErr.Report = err.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, bindErr)
+	}
+
+	if len(param.Data) == 0 {
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, fmt.Errorf("param should not be nil"))
+
+	}
+
+	tx := database.Engine.NewSession()
+	defer tx.Close()
+	tx.Begin()
+
+	var aim model.Target
+	if _, dbError := tx.ID(aimId).Get(&aim); dbError != nil && aim.Id != otherTarget.Id {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+
+	var task model.Task
+	if _, dbError := tx.ID(taskId).Get(&task); dbError != nil {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+
+	for _, i := range param.Data {
+		if i.Id == 0 {
+			// create
+			var tempThings model.Things
+			tempThings.Description = i.Description
+			if _, dbError := tx.InsertOne(&tempThings); dbError != nil {
+				tx.Rollback()
+				dbErr := error_target_notes.RecordErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+			task.ThingIds = append(task.ThingIds, tempThings.Id)
+			if _, dbError := tx.ID(taskId).Cols("thing_ids").Update(&task); dbError != nil {
+				tx.Rollback()
+				dbErr := error_target_notes.UpdateErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+		} else {
+			// update
+			var tempThings model.Things
+			if _, dbError := tx.ID(i.Id).Get(&tempThings); dbError != nil {
+				dbErr := error_target_notes.RecordErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+			tempThings.Description = i.Description
+			if _, dbError := tx.ID(i.Id).Cols("description").Update(tempThings); dbError != nil {
+				dbErr := error_target_notes.UpdateErrorTarget
+				dbErr.Report = dbError.Error()
+				return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+			}
+		}
+	}
+	tx.Commit()
+	return make_result.ResponseWithJson(c, http.StatusOK, aim.SerializerWithTaskTitle())
+
+}
+
+func createTaskHandler(c echo.Context) error {
+
+	aimId := c.Param("aim_id")
+	otherTarget := middleware.CurrentOtherTarget(c)
+	var param createTaskParam
+	if err := c.Bind(&param); err != nil {
+		bindErr := error_target_notes.ParamErrorTarget
+		bindErr.Report = err.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, bindErr)
+	}
+
+	log.Println("Param: ", param)
+	tx := database.Engine.NewSession()
+	defer tx.Close()
+	tx.Begin()
+
+	var aim model.Target
+	if _, dbError := tx.ID(aimId).Get(&aim); dbError != nil && aim.Id != otherTarget.Id {
+		dbErr := error_target_notes.RecordErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+	}
+	if aim.Id == 0 {
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, fmt.Sprintf("record not found"))
+	}
+	log.Println("aim: ", aim.Id, aim.Title)
+	var task model.Task
+	task = model.Task{
+		Title:    param.Title,
+		TargetId: aim.Id,
+		Status:   model.UNDONE,
+	}
+	if _, dbError := tx.InsertOne(&task); dbError != nil {
+		tx.Rollback()
+		dbErr := error_target_notes.InsertErrorTarget
+		dbErr.Report = dbError.Error()
+		return make_result.ResponseWithJson(c, http.StatusBadRequest, dbErr)
+
+	}
+
+	log.Println("task: ", task.Id, task.Title)
+
+	aim.TaskIds = append(aim.TaskIds, task.Id)
+	tx.ID(aim.Id).Cols("task_ids").Update(&aim)
+	tx.Commit()
+	return make_result.ResponseWithJson(c, http.StatusOK, aim.SerializerWithTaskTitle())
+
 }

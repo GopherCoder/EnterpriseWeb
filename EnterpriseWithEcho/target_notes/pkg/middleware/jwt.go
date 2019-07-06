@@ -46,3 +46,7 @@ func CurrentAdmin(c echo.Context) model.Admin {
 func CurrentAdminAccount(c echo.Context) string {
 	return c.Get("current_account_name").(string)
 }
+
+func CurrentAdminId(c echo.Context) int64 {
+	return c.Get("current_admin_id").(int64)
+}
