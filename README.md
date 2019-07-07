@@ -35,4 +35,5 @@
 
 ## Done
 
-- [x] 8.目标笔记
+- [x] 8.目标笔记 --> EnterpriseWithEcho
+- [x] 2.全球独角兽企业: 独角汇 --> EnterpriseWithMux
