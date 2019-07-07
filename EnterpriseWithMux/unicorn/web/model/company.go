@@ -8,8 +8,8 @@ type Company struct {
 	WebSite       string    `gorm:"type:varchar(64)" json:"web_site"`
 	Valuation     uint      `gorm:"type:bigint" json:"valuation"`
 	ValuationDate time.Time `gorm:"type:timestamp with time zone" json:"valuation_date"`
-	CountryId     uint
-	CategoryId    uint
+	CountryID     uint
+	CategoryID    uint
 }
 
 func (c Company) TableName() string {

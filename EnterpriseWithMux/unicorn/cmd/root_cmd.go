@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"EnterpriseWeb/EnterpriseWithBeego/unicorn/pkg/database"
+	"EnterpriseWeb/EnterpriseWithMux/unicorn/pkg/database"
+	"EnterpriseWeb/EnterpriseWithMux/unicorn/pkg/router"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -9,12 +10,16 @@ import (
 
 const PROJECT = "unicorn"
 
+func init() {
+	rootCMD.AddCommand(migrateCMD)
+}
+
 var rootCMD = &cobra.Command{
 	Use: PROJECT,
 	Run: func(cmd *cobra.Command, args []string) {
 		database.EngineInit()
 		defer database.Engine.Close()
-
+		router.CollectionRouters()
 	},
 }
 
