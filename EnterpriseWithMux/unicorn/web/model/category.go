@@ -1,6 +1,10 @@
 package model
 
-import "github.com/jinzhu/gorm"
+import (
+	"time"
+
+	"github.com/jinzhu/gorm"
+)
 
 type Category struct {
 	gorm.Model
@@ -10,3 +14,19 @@ type Category struct {
 //func (c Category) TableName() string {
 //	return "category"
 //}
+
+type CategorySerializer struct {
+	Id        uint      `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	Name      string    `json:"name"`
+}
+
+func (c Category) Serializer() CategorySerializer {
+	return CategorySerializer{
+		Id:        c.ID,
+		CreatedAt: c.CreatedAt.Truncate(time.Second),
+		UpdatedAt: c.UpdatedAt.Truncate(time.Second),
+		Name:      c.Name,
+	}
+}
