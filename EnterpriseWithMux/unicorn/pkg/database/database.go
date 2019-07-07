@@ -18,12 +18,12 @@ func EngineInit() {
 		return
 	}
 	engine.LogMode(true)
-	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
-		return "unicorn_"
-	}
-	gorm.DefaultTableNameHandler(engine, "unicorn_")
+
 	engine.DB().SetMaxOpenConns(3)
 	engine.DB().SetConnMaxLifetime(time.Hour)
 	engine.DB().SetMaxIdleConns(3)
 	Engine = engine
+	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
+		return "unicorn_" + defaultTableName
+	}
 }

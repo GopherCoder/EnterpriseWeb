@@ -1,10 +1,12 @@
 package model
 
+import "github.com/jinzhu/gorm"
+
 type Category struct {
-	base
+	gorm.Model
 	Name string `json:"name" gorm:"varchar(12)"`
 }
 
-func (c Category) TableName() string {
-	return "category"
-}
+//func (c Category) TableName() string {
+//	return "category"
+//}
