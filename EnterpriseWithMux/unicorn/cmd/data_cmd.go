@@ -15,4 +15,9 @@ var dataCMD = &cobra.Command{
 	},
 }
 
-func unicorn(root string) {}
+type UnicornCompanyRequest struct {
+	Request   string `json:"request"`
+	ParseFunc func([]byte) interface{}
+}
+
+func Run() {}

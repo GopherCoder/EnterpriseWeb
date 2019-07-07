@@ -24,5 +24,6 @@ var models = func() []interface{} {
 		new(model.Company),
 		new(model.Category),
 		new(model.Country),
+		new(model.Concept),
 	}
 }
