@@ -2,10 +2,13 @@ package router
 
 import (
 	"EnterpriseWeb/EnterpriseWithMux/unicorn/pkg/middleware"
-	"EnterpriseWeb/EnterpriseWithMux/unicorn/web/company"
+	"EnterpriseWeb/EnterpriseWithMux/unicorn/web/country"
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -26,7 +29,7 @@ func CollectionRouters() {
 	})
 
 	s := r.PathPrefix("/v1/api").Subrouter()
-	company.Register(s)
+	country.Register(s)
 
 	srv := &http.Server{
 		Handler: r,
@@ -35,6 +38,20 @@ func CollectionRouters() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
 
-	log.Fatal(srv.ListenAndServe())
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	defer cancel()
+	srv.Shutdown(ctx)
+	log.Println("shutting down")
+	os.Exit(0)
 }

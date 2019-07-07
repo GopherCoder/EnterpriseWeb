@@ -15,6 +15,6 @@ test:
 	go build -o ${BINARY} -v ${TEST_FLAGS} -tags=jsoniter
 
 run:
-	go run target_notes.go
+	go run main.go
 
 .PHONY: default prod test
