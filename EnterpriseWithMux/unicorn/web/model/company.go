@@ -8,7 +8,7 @@ import (
 
 type Company struct {
 	gorm.Model
-	Name          string    `gorm:"type:varchar(12)" json:"name"`
+	Name          string    `gorm:"type:varchar(32)" json:"name"`
 	WebSite       string    `gorm:"type:varchar(64)" json:"web_site"`
 	Valuation     uint      `gorm:"type:bigint" json:"valuation"`
 	ValuationDate time.Time `json:"valuation_date"`

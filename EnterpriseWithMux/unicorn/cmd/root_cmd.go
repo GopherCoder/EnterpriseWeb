@@ -12,6 +12,7 @@ const PROJECT = "unicorn"
 
 func init() {
 	rootCMD.AddCommand(migrateCMD)
+	rootCMD.AddCommand(dataCMD)
 }
 
 var rootCMD = &cobra.Command{
