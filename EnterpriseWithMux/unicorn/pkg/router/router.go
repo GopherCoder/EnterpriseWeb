@@ -2,6 +2,7 @@ package router
 
 import (
 	"EnterpriseWeb/EnterpriseWithMux/unicorn/pkg/middleware"
+	"EnterpriseWeb/EnterpriseWithMux/unicorn/web/company"
 	"EnterpriseWeb/EnterpriseWithMux/unicorn/web/concept"
 	"EnterpriseWeb/EnterpriseWithMux/unicorn/web/country"
 	"context"
@@ -32,7 +33,7 @@ func CollectionRouters() {
 	s := r.PathPrefix("/v1/api").Subrouter()
 	country.Register(s)
 	concept.Register(s)
-
+	company.Register(s)
 	srv := &http.Server{
 		Handler: r,
 		Addr:    "127.0.0.1:8000",

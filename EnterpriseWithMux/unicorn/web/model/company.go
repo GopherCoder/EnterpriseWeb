@@ -1,6 +1,8 @@
 package model
 
 import (
+	"math"
+	"strconv"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -26,7 +28,7 @@ type CompanySerializer struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 	Name          string    `json:"name"`
 	WebSite       string    `json:"web_site"`
-	Valuation     uint      `json:"valuation"`
+	Valuation     string    `json:"valuation"`
 	ValuationDate time.Time `json:"valuation_date"`
 	CountryName   string    `json:"country_name"`
 	CategoryName  string    `json:"category_name"`
@@ -46,13 +48,17 @@ func (c Company) Serializer(db *gorm.DB) CompanySerializer {
 		return category.Name
 	}
 
+	valuation := func(v uint) string {
+		return "$" + strconv.FormatFloat(float64(v)/float64(math.Pow(10, 8)), 'f', 0, 32) + "亿"
+	}
+
 	return CompanySerializer{
 		Id:            c.ID,
 		CreatedAt:     c.CreatedAt,
 		UpdatedAt:     c.UpdatedAt,
 		Name:          c.Name,
 		WebSite:       c.WebSite,
-		Valuation:     c.Valuation,
+		Valuation:     valuation(c.Valuation),
 		ValuationDate: c.ValuationDate,
 		CategoryName:  categoryName(c.CategoryID),
 		CountryName:   countryName(c.CountryID),
