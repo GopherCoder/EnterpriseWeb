@@ -13,3 +13,6 @@
 
 EnterpriseWithMux/unicorn/vendor/*
 !EnterpriseWithMux/unicorn/vendor/vendor.json
+
+EnterpriseWithEcho/target_notes/vendor/*
+!EnterpriseWithEcho/target_notes/vendor/vendor.json

@@ -7,10 +7,9 @@ import (
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/model"
 	"EnterpriseWeb/EnterpriseWithEcho/target_notes/web/result"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
-
-	"qiniupkg.com/x/log.v7"
 
 	"github.com/labstack/echo"
 )
