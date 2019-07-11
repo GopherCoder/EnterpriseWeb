@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -17,26 +18,26 @@ type Vote struct {
 	IsSingle    bool
 }
 type VoteSerializer struct {
-	Id          uint      `json:"id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Title       string    `json:"title"`
-	AdminId     uint      `json:"admin_id"`
-	Description string    `json:"description"`
-	Choice      []string  `json:"choice"`
-	DeadLine    time.Time `json:"dead_line"`
-	IsAnonymous bool      `json:"is_anonymous"`
-	IsSingle    bool      `json:"is_single"`
+	Id          uint               `json:"id"`
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
+	Title       string             `json:"title"`
+	AdminId     uint               `json:"admin_id"`
+	Description string             `json:"description"`
+	Choice      []ChoiceSerializer `json:"choice"`
+	DeadLine    time.Time          `json:"dead_line"`
+	IsAnonymous bool               `json:"is_anonymous"`
+	IsSingle    bool               `json:"is_single"`
 }
 
 func (v Vote) Serializer(tx *gorm.DB) VoteSerializer {
 
-	choices := func(i uint) []string {
+	choices := func(i uint) []ChoiceSerializer {
 		var choices []Choice
-		tx.Where("id = ?", i).Find(&choices)
-		var result []string
+		tx.Where("vote_id = ?", i).Find(&choices)
+		var result []ChoiceSerializer
 		for _, i := range choices {
-			result = append(result, i.Title)
+			result = append(result, i.Serializer(tx))
 		}
 		return result
 	}
@@ -59,6 +60,7 @@ type Choice struct {
 	gorm.Model
 	VoteId uint
 	Title  string `gorm:"type:varchar(32)" json:"title"`
+	Number int    `gorm:"type:integer" json:"number"`
 }
 
 type ChoiceSerializer struct {
@@ -67,13 +69,21 @@ type ChoiceSerializer struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 	VoteTitle   string    `json:"vote_title"`
 	ChoiceTitle string    `json:"choice_title"`
+	Number      int       `json:"number"`
+	Ratio       string    `json:"ratio"`
 }
 
-func (c Choice) Serializer(tx *gorm.DB) ChoiceSerializer {
+func (c Choice) Serializer(tx *gorm.DB, sum int) ChoiceSerializer {
 	voteTile := func(i uint) string {
 		var vote Vote
 		tx.Where("id = ?", i).First(&vote)
 		return vote.Title
+	}
+	ration := func(number int) string {
+		if sum == 0 {
+			return "0%"
+		}
+		return strconv.FormatFloat(float64(number)/float64(sum), 'f', 1, 32) + "%"
 	}
 	return ChoiceSerializer{
 		Id:          c.ID,
@@ -81,6 +91,8 @@ func (c Choice) Serializer(tx *gorm.DB) ChoiceSerializer {
 		UpdatedAt:   c.UpdatedAt.Truncate(time.Second),
 		VoteTitle:   voteTile(c.VoteId),
 		ChoiceTitle: c.Title,
+		Number:      c.Number,
+		Ratio:       ration(c.Number),
 	}
 
 }
