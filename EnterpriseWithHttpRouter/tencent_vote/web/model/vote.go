@@ -36,8 +36,12 @@ func (v Vote) Serializer(tx *gorm.DB) VoteSerializer {
 		var choices []Choice
 		tx.Where("vote_id = ?", i).Find(&choices)
 		var result []ChoiceSerializer
+		var sum int
 		for _, i := range choices {
-			result = append(result, i.Serializer(tx))
+			sum += i.Number
+		}
+		for _, i := range choices {
+			result = append(result, i.Serializer(tx, sum))
 		}
 		return result
 	}

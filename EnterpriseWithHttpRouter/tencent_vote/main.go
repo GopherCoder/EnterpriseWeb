@@ -5,7 +5,10 @@ import (
 	"log"
 )
 
+var Env string
+
 func main() {
-	log.Print("Start Web Server...")
+	log.Println("Start Web Server...")
+	log.Println("Env : ", Env)
 	cmd.Execute()
 }

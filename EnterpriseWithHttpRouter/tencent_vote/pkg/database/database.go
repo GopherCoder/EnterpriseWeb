@@ -7,6 +7,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const (
+	PROJECT = "tencentVotes_"
+)
+
 var Engine *gorm.DB
 
 func EngineInit() {
@@ -16,4 +20,8 @@ func EngineInit() {
 	}
 	db.LogMode(true)
 	Engine = db
+	gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
+		return PROJECT + defaultTableName
+	}
+
 }

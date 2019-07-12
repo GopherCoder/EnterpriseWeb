@@ -23,3 +23,6 @@ func Execute() {
 		log.Panic("ROOT CMD RUN FAIL")
 	}
 }
+func init() {
+	RootCMD.AddCommand(syncCMD)
+}

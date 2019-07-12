@@ -16,3 +16,5 @@ EnterpriseWithMux/unicorn/vendor/*
 
 EnterpriseWithEcho/target_notes/vendor/*
 !EnterpriseWithEcho/target_notes/vendor/vendor.json
+
+EnterpriseWithHttpRouter/tencent_vote/tencent_vote
