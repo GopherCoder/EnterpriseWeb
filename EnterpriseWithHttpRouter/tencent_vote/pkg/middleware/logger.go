@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -17,4 +18,14 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 
 func Red(message string) string {
 	return fmt.Sprintf("\x1b[31m%s\x1b[0m", message)
+}
+
+func Auth(next http.HandlerFunc) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+
+		authToken := request.Header.Get("Authorization")
+		list := strings.Split(authToken, " ")
+
+		next.ServeHTTP(writer, request)
+	}
 }

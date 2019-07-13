@@ -30,6 +30,7 @@ func Models() []interface{} {
 	return []interface{}{
 		&model.Vote{},
 		&model.Choice{},
+		&model.Admin{},
 	}
 }
 func Run() {

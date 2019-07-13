@@ -26,6 +26,10 @@ func CollectionOfRouter() {
 
 	var voteRouter vote.Vote
 	http.HandleFunc("/vote", middleware.Logger(voteRouter.CreateVote))
+	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.GetVote))
+	http.HandleFunc("/votes", middleware.Logger(voteRouter.GetAllVotes))
+	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.DeleteVote))
+	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.PatchVote))
 
 	//服务启动
 	go func() {
