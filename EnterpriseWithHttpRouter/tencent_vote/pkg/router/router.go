@@ -2,9 +2,11 @@ package router
 
 import (
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/pkg/middleware"
+	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/admin"
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/vote"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -23,13 +25,17 @@ func CollectionOfRouter() {
 			log.Panic("CONNECT TO SERVER FAIL")
 		}
 	}))
+	v1 := fmt.Sprintf("/v1/api")
 
 	var voteRouter vote.Vote
-	http.HandleFunc("/vote", middleware.Logger(voteRouter.CreateVote))
-	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.GetVote))
-	http.HandleFunc("/votes", middleware.Logger(voteRouter.GetAllVotes))
-	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.DeleteVote))
-	http.HandleFunc("/vote/{vote_id}", middleware.Logger(voteRouter.PatchVote))
+	http.HandleFunc(fmt.Sprintf(v1+"/vote"), middleware.Logger(voteRouter.CreateVote))
+	http.HandleFunc(fmt.Sprintf(v1+"/vote/{vote_id}"), middleware.Logger(voteRouter.Vote))
+	http.HandleFunc(fmt.Sprintf(v1+"/votes"), middleware.Logger(voteRouter.GetAllVotes))
+
+	var adminRouter admin.Admin
+	http.HandleFunc(fmt.Sprintf(v1+"/register"), middleware.Logger(adminRouter.Register))
+	http.HandleFunc(fmt.Sprintf(v1+"/login"), middleware.Logger(adminRouter.Login))
+	http.HandleFunc(fmt.Sprintf(v1+"/logout"), middleware.Logger(adminRouter.Logout))
 
 	//服务启动
 	go func() {

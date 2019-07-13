@@ -8,9 +8,9 @@ import (
 
 type Admin struct {
 	gorm.Model
-	Phone    string `gorm:"varchar(11)" json:"phone"`
-	Password string `gorm:"varchar(128)" json:"password"`
-	Token    string `gorm:"varchar(32)" json:"token"`
+	Phone    string `gorm:"type:varchar(11);unique;not null" json:"phone"`
+	Password string `gorm:"type:varchar(128)" json:"password"`
+	Token    string `gorm:"type:varchar(32)" json:"token"`
 }
 
 type AdminSerializer struct {

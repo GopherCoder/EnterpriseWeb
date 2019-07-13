@@ -1,9 +1,13 @@
 package middleware
 
 import (
+	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/pkg/database"
+	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/model"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -25,7 +29,17 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 		authToken := request.Header.Get("Authorization")
 		list := strings.Split(authToken, " ")
-
+		if len(list) != 2 {
+			json.NewEncoder(writer).Encode(fmt.Sprintf("Please Add Authorization"))
+			return
+		}
+		bearer := list[1]
+		var admin model.Admin
+		if dbError := database.Engine.Where("token = ?", bearer).First(&admin).Error; dbError != nil {
+			json.NewEncoder(writer).Encode(dbError)
+			return
+		}
+		request.Header.Add("current_admin_id", strconv.Itoa(int(admin.ID)))
 		next.ServeHTTP(writer, request)
 	}
 }

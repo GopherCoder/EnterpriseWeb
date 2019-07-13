@@ -45,6 +45,7 @@ func (v Vote) CreateVote(w http.ResponseWriter, r *http.Request) {
 	vote = model.Vote{
 		Title: param.Title,
 	}
+	log.Println(vote)
 }
 
 func (v Vote) PatchVote(w http.ResponseWriter, r *http.Request) {
@@ -64,5 +65,20 @@ func (v Vote) DeleteVote(w http.ResponseWriter, r *http.Request) {
 
 func (v Vote) GetAllVotes(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
+	}
+}
+
+func (v Vote) Vote(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPatch {
+		v.PatchVote(w, r)
+		return
+	}
+	if r.Method == http.MethodDelete {
+		v.DeleteVote(w, r)
+		return
+	}
+	if r.Method == http.MethodGet {
+		v.GetVote(w, r)
+		return
 	}
 }
