@@ -33,7 +33,7 @@ func (c CreateParam) toTime() (time.Time, error) {
 }
 
 type PatchParam struct {
-	ChoiceId []uint `json:"choice_id" validate:"min=1"`
+	ChoiceIds []uint `json:"choice_ids" validate:"min=1"`
 }
 
 func (p PatchParam) Valid() error {

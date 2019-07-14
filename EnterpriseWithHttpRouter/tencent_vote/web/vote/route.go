@@ -4,12 +4,16 @@ import (
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/pkg/database"
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/pkg/error"
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/pkg/middleware"
+	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/make_request"
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/make_response"
 	"EnterpriseWeb/EnterpriseWithHttpRouter/tencent_vote/web/model"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Vote struct {
@@ -105,6 +109,44 @@ func (v Vote) PatchVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var param PatchParam
+	if err := make_request.BindJson(r, &param); err != nil {
+		make_response.Result(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	log.Println("Param: ", param)
+	tx := database.Engine.Begin()
+	//defer tx.Close()
+	voteId := make_request.Query(r, "vote_id")
+	var vote model.Vote
+	if dbError := tx.Where("id = ?", voteId).Preload("Choice").First(&vote).Error; dbError != nil {
+		make_response.Result(w, r, http.StatusBadRequest, dbError.Error())
+		return
+	}
+
+	if vote.IsSingle && len(param.ChoiceIds) > 1 {
+		make_response.Result(w, r, http.StatusBadRequest, fmt.Errorf("choice shoudl be single").Error())
+		return
+	}
+
+	var cacheMap = make(map[uint]model.Choice)
+	for _, i := range vote.Choice {
+		cacheMap[i.ID] = i
+	}
+	for _, i := range param.ChoiceIds {
+		if _, ok := cacheMap[i]; !ok {
+			make_response.Result(w, r, http.StatusBadRequest, fmt.Errorf("no exists this choice").Error())
+			return
+		}
+	}
+	for _, i := range param.ChoiceIds {
+		if dbError := tx.Model(cacheMap[i]).Update("number", gorm.Expr("number + ?", 1)).Error; dbError != nil {
+			tx.Rollback()
+			make_response.Result(w, r, http.StatusBadRequest, dbError.Error())
+			return
+		}
+	}
+	tx.Commit()
+	make_response.Result(w, r, http.StatusOK, vote.Serializer(database.Engine))
 
 }
 
@@ -116,7 +158,7 @@ func (v Vote) DeleteVote(w http.ResponseWriter, r *http.Request) {
 
 	id := r.URL.Query().Get("vote_id")
 	tx := database.Engine.Begin()
-	defer tx.Close()
+	//defer tx.Close()
 
 	var vote model.Vote
 	if dbError := tx.Where("id = ?", id).First(&vote).Error; dbError != nil {

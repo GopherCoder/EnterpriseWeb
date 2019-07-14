@@ -87,7 +87,7 @@ func (c Choice) Serializer(tx *gorm.DB, sum int) ChoiceSerializer {
 		if sum == 0 {
 			return "0%"
 		}
-		return strconv.FormatFloat(float64(number)/float64(sum), 'f', 1, 32) + "%"
+		return strconv.FormatFloat(float64(number)/float64(sum)*100, 'f', 1, 32) + "%"
 	}
 	return ChoiceSerializer{
 		Id:          c.ID,

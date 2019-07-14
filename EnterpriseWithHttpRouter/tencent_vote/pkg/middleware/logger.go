@@ -31,18 +31,23 @@ func Red(message string) string {
 
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-
+		var results = make(map[string]interface{})
 		authToken := request.Header.Get("Authorization")
 		list := strings.Split(authToken, " ")
 		if len(list) != 2 {
-			json.NewEncoder(writer).Encode(fmt.Sprintf("Please Add Authorization"))
+			writer.Header().Set("Content-type", "application/json")
+			results["code"] = http.StatusBadRequest
+			results["error"] = "Please Add Authorization"
+			json.NewEncoder(writer).Encode(results)
 			return
 		}
 		bearer := list[1]
 		var admin model.Admin
-		log.Println(database.Engine)
 		if dbError := database.Engine.Where("token = ?", bearer).First(&admin).Error; dbError != nil {
-			json.NewEncoder(writer).Encode(dbError)
+			writer.Header().Set("Content-type", "application/json")
+			results["code"] = http.StatusBadRequest
+			results["error"] = dbError.Error()
+			json.NewEncoder(writer).Encode(results)
 			return
 		}
 		Store["current_admin_id"] = admin.ID
