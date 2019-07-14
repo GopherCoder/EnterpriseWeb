@@ -28,9 +28,8 @@ func CollectionOfRouter() {
 	v1 := fmt.Sprintf("/v1/api")
 
 	var voteRouter vote.Vote
-	http.HandleFunc(fmt.Sprintf(v1+"/vote"), middleware.Logger(voteRouter.CreateVote))
-	http.HandleFunc(fmt.Sprintf(v1+"/vote/{vote_id}"), middleware.Logger(voteRouter.Vote))
-	http.HandleFunc(fmt.Sprintf(v1+"/votes"), middleware.Logger(voteRouter.GetAllVotes))
+	http.HandleFunc(fmt.Sprintf(v1+"/vote"), middleware.Auth(middleware.Logger(voteRouter.Vote)))
+	http.HandleFunc(fmt.Sprintf(v1+"/votes"), middleware.Auth(middleware.Logger(voteRouter.GetAllVotes)))
 
 	var adminRouter admin.Admin
 	http.HandleFunc(fmt.Sprintf(v1+"/register"), middleware.Logger(adminRouter.Register))

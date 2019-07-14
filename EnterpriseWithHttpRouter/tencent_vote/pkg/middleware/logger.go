@@ -7,10 +7,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
+
+var Store map[string]interface{}
+
+func init() {
+	Store = make(map[string]interface{})
+}
 
 func Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -35,11 +40,21 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		}
 		bearer := list[1]
 		var admin model.Admin
+		log.Println(database.Engine)
 		if dbError := database.Engine.Where("token = ?", bearer).First(&admin).Error; dbError != nil {
 			json.NewEncoder(writer).Encode(dbError)
 			return
 		}
-		request.Header.Add("current_admin_id", strconv.Itoa(int(admin.ID)))
+		Store["current_admin_id"] = admin.ID
+		Store["current_admin"] = admin
 		next.ServeHTTP(writer, request)
 	}
+}
+
+func CurrentAdmin() model.Admin {
+	return Store["current_admin"].(model.Admin)
+}
+
+func CurrentAdminId() uint {
+	return Store["current_admin_id"].(uint)
 }

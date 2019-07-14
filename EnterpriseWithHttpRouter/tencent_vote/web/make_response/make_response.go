@@ -14,9 +14,11 @@ func Result(writer http.ResponseWriter, request *http.Request, code int, data in
 	} else {
 		result["error"] = data
 	}
-
-	if err := json.NewEncoder(writer).Encode(result); err != nil {
-		log.Println("err : ", err.Error())
+	writer.Header().Set("Content-Type", "application/json")
+	enc := json.NewEncoder(writer)
+	enc.SetIndent("", "")
+	err := enc.Encode(result)
+	if err != nil {
+		log.Println(err)
 	}
-
 }
