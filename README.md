@@ -44,4 +44,4 @@
 
 - [x] 8.目标笔记 --> EnterpriseWithEcho(echo 框架)
 - [x] 2.全球独角兽企业: 独角汇 --> EnterpriseWithMux(mux 框架)
-- [x] 7.腾讯投票 --> EnterpriseWithHttpRouter(原生 net/http)
+- [x] 7.腾讯投票 --> EnterpriseWithHTTP(原生 net/http)
