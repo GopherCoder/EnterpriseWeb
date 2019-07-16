@@ -32,6 +32,56 @@ function GetPartOne() {
     echo ${Search##*/}
     echo ${Search%/*}
     echo ${Search%%/*}
-    echo ${Search} | cut -f 1,2 -d '/'
+    echo ${Search} | cut -f 1,2 -d ${1}
 }
-GetPartOne
+GetPartOne '/'
+
+
+function Sum() {
+    sum=0
+    echo `expr 100 \* ${1}`
+    for ((i=0;i<${1};i++));
+    do
+        let sum=sum+i
+    done
+    for i in `seq 1 2 ${2}`;
+    do
+        echo ${i}
+    done
+    echo `seq -s " | " ${2}`
+    return ${sum}
+}
+
+Sum 10 12
+echo $?
+
+function Echo() {
+    if [[ -e users ]];then
+        `touch users`
+    fi
+    `who > users`
+}
+
+Echo
+
+echo $?
+
+function Remove() {
+    if test  -f users ; then
+        `rm users`
+    fi
+}
+
+Remove
+
+function List() {
+    l=("go" "python" "java")
+    echo ${l[@]}
+    echo `type ls`
+
+    if [[ $[num1] -eq $[num2] ]]; then
+        echo ""
+    fi
+
+}
+List
