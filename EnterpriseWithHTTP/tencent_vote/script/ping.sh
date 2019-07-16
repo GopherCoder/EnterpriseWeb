@@ -59,7 +59,8 @@ function Echo() {
     if [[ -e users ]];then
         `touch users`
     fi
-    `who > users`
+    use=$(who > users)
+    echo $(cat users)
 }
 
 Echo
