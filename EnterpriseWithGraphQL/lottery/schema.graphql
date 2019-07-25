@@ -1,0 +1,28 @@
+
+
+type Query {
+    admin(id: ID!): Admin
+    lottery(admin_id: ID!): Lottery
+    admin(id: ID!): Lotteries
+
+}
+
+type Mutation {
+}
+
+type Admin {
+    id: ID
+    phone: String!
+    passwd: String!
+    token: String!
+}
+
+type Lottery {
+    id: ID
+}
+
+type Lotteries {
+    List: [Lottery]!
+}
+
+
