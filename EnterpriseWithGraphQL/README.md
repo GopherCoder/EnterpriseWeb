@@ -151,4 +151,7 @@ union  Search = A | B | C
 - 开发：定义 schema、type（field, args, Resolve)
 
 
+## 问题
+
+- 接口测试发现，如何将请求体正确的解析再传入给 graphql 服务解析，是第一步
 
