@@ -12,7 +12,7 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 		"id": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.ID),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				if admin, ok := p.Source.(*model.Admin); ok == true {
+				if admin, ok := p.Source.(*model.AdminSerializer); ok == true {
 					return admin.Id, nil
 				}
 				return nil, nil
@@ -21,7 +21,7 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				if admin, ok := p.Source.(*model.Admin); ok == true {
+				if admin, ok := p.Source.(*model.AdminSerializer); ok == true {
 					return admin.Name, nil
 				}
 				return nil, nil
@@ -30,7 +30,7 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 		"token": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				if admin, ok := p.Source.(*model.Admin); ok == true {
+				if admin, ok := p.Source.(*model.AdminSerializer); ok == true {
 					return admin.Token, nil
 				}
 				return nil, nil
@@ -39,7 +39,7 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 		"phone": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				if admin, ok := p.Source.(*model.Admin); ok == true {
+				if admin, ok := p.Source.(*model.AdminSerializer); ok == true {
 					return admin.Phone, nil
 				}
 				return nil, nil

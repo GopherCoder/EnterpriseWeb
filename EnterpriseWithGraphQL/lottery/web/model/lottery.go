@@ -2,6 +2,7 @@ package model
 
 import (
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/pkg/database"
+	"fmt"
 	"time"
 )
 
@@ -14,9 +15,11 @@ const (
 	LUCKY
 )
 
-var LotteryClass = make(map[int]string)
+var LotteryClass = map[int]string{}
 
 func init() {
+	LotteryClass = make(map[int]string)
+
 	LotteryClass[NORMAL] = "普通抽奖"
 	LotteryClass[JOKE] = "皮一下"
 	LotteryClass[HIGH] = "高级抽奖"
@@ -27,7 +30,6 @@ func init() {
 
 type Lottery struct {
 	Base            `xorm:"extends"`
-	ImageURL        string    `json:"image_url"`
 	Deadline        time.Time `json:"deadline"`
 	Levels          []Level   `json:"levels"`
 	WinnerLotteryId int64     `xorm:"index" json:"winner_lottery_id"`
@@ -37,18 +39,49 @@ type Lottery struct {
 	AdminID         int64     `xorm:"index" json:"admin_id"`
 }
 
-type LotterySerialize struct {
-	Id                int64            `json:"id"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
-	ImageURL          string           `json:"image_url"`
-	DeadLine          string           `json:"dead_line"`
-	Levels            []LevelSerialize `json:"levels"`
-	WinnerLotteryName string           `json:"winner_lottery_name"`
-	Class             string           `json:"class"`
-	Number            int              `json:"number"`
-	Limit             int              `json:"limit"`
-	AdminName         string           `json:"admin_name"`
+func (L Lottery) TableName() string {
+	return fmt.Sprintf("%s_%s", PROJECT, "lottery")
+}
+
+type LotterySerializer struct {
+	Id                int64              `json:"id"`
+	CreatedAt         time.Time          `json:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at"`
+	DeadLine          string             `json:"dead_line"`
+	Levels            []*LevelSerializer `json:"levels"`
+	WinnerLotteryName string             `json:"winner_lottery_name"`
+	Class             string             `json:"class"`
+	Number            int                `json:"number"`
+	Limit             int                `json:"limit"`
+	AdminName         string             `json:"admin_name"`
+}
+
+func (L Lottery) Serializer() *LotterySerializer {
+	var levels []*LevelSerializer
+	for _, i := range L.Levels {
+		levels = append(levels, i.Serializer())
+	}
+	var winnerLottery WinnerLottery
+	if has, dbError := database.Engine.ID(L.WinnerLotteryId).Get(&winnerLottery); !has || dbError != nil {
+		return nil
+	}
+	var admin Admin
+	if has, dbError := database.Engine.ID(L.AdminID).Get(&admin); !has || dbError != nil {
+		return nil
+	}
+
+	return &LotterySerializer{
+		Id:                L.Id,
+		CreatedAt:         L.CreatedAt.Truncate(time.Second),
+		UpdatedAt:         L.UpdatedAt.Truncate(time.Second),
+		DeadLine:          L.Deadline.Format(time.RFC3339),
+		Levels:            levels,
+		WinnerLotteryName: WinnerCondition[winnerLottery.Class],
+		Class:             LotteryClass[L.Class],
+		Number:            L.Number,
+		Limit:             L.Limit,
+		AdminName:         admin.Name,
+	}
 }
 
 // 奖项
@@ -73,21 +106,37 @@ func init() {
 }
 
 type Level struct {
-	Base      `xorm:"extends"`
-	Name      string `json:"name"`
-	Number    int    `json:"number"`
-	Class     int    `json:"class"`
-	LotteryId int64  `xorm:"index" json:"lottery_id"`
+	Base     `xorm:"extends"`
+	Name     string `json:"name"`
+	ImageURL string `json:"image_url"`
+	Number   int    `json:"number"`
+	Class    int    `json:"class"`
 }
 
-type LevelSerialize struct {
+func (L Level) TableName() string {
+	return fmt.Sprintf("%s_%s", PROJECT, "level")
+}
+
+type LevelSerializer struct {
 	Id        int64     `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+	ImageURL  string    `json:"image_url"`
 	Name      string    `json:"name"`
 	Number    int       `json:"number"`
-	Class     int       `json:"class"`
-	LotteryId int64     `json:"lottery_id"`
+	Class     string    `json:"class"`
+}
+
+func (L Level) Serializer() *LevelSerializer {
+	return &LevelSerializer{
+		Id:        L.Id,
+		CreatedAt: L.CreatedAt,
+		UpdatedAt: L.UpdatedAt,
+		ImageURL:  L.ImageURL,
+		Name:      L.Name,
+		Number:    L.Number,
+		Class:     Prize[L.Class],
+	}
 }
 
 // 开奖条件
@@ -98,13 +147,26 @@ const (
 	NOWLEVEL
 )
 
-var WinnerCondition = make(map[int]string)
+var WinnerCondition = map[int]string{}
+var DefaultWinnerLottery = []WinnerLottery{}
 
 func init() {
+	WinnerCondition = make(map[int]string)
 	WinnerCondition[TIMELEVEL] = "按时间自动开奖"
 	WinnerCondition[PERSONLEVEL] = "按人数自动开奖"
 	WinnerCondition[NOWLEVEL] = "即开即中"
-
+	DefaultWinnerLottery = []WinnerLottery{
+		{
+			Class:       TIMELEVEL,
+			Description: WinnerCondition[TIMELEVEL],
+		}, {
+			Class:       PERSONLEVEL,
+			Description: WinnerCondition[PERSONLEVEL],
+		}, {
+			Class:       NOWLEVEL,
+			Description: WinnerCondition[NOWLEVEL],
+		},
+	}
 }
 
 type WinnerLottery struct {
@@ -113,32 +175,24 @@ type WinnerLottery struct {
 	Class       int    `json:"index"`
 }
 
-func ListLottery(ownerID int64) ([]Lottery, error) {
-	var results []Lottery
-
-	if dbError := database.Engine.ID(ownerID).Find(&results); dbError != nil {
-		return results, dbError
-	}
-	return results, nil
+func (W WinnerLottery) TableName() string {
+	return fmt.Sprintf("%s_%s", PROJECT, "winner_lottery")
 }
 
-func OneLottery(id int64) (Lottery, error) {
-	var result Lottery
-	if has, err := database.Engine.ID(id).Get(&result); !has || err != nil {
-		return result, err
-	}
-	return result, nil
+type WinnerLotterySerializer struct {
+	Id          int64     `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Description string    `json:"description"`
+	Class       string    `json:"class"`
 }
 
-func InvolvementsLottery(adminID int64) ([]Lottery, error) {
-	var results []Lottery
-	var adminTakePartIn AdminTakePart
-	if has, dbError := database.Engine.ID(adminID).Get(&adminTakePartIn); dbError != nil || !has {
-		return results, dbError
+func (W WinnerLottery) Serializer() *WinnerLotterySerializer {
+	return &WinnerLotterySerializer{
+		Id:          W.Id,
+		CreatedAt:   W.CreatedAt,
+		UpdatedAt:   W.UpdatedAt,
+		Description: W.Description,
+		Class:       WinnerCondition[W.Class],
 	}
-
-	if dbError := database.Engine.In("lottery_ids", adminTakePartIn.LotteryIds).Find(&results); dbError != nil {
-		return results, dbError
-	}
-	return results, nil
 }

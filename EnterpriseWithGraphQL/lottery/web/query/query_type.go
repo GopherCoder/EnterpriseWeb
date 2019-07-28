@@ -4,21 +4,15 @@ import (
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/pkg/assistance"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/address"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/admin"
-	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/lottery"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/model"
-	"strconv"
 
 	"github.com/graphql-go/graphql"
 )
-
-func init() {
-}
 
 var Query = graphql.NewObject(graphql.ObjectConfig{
 	Name:        "Query",
 	Description: "Query",
 	Fields: graphql.Fields{
-
 		"ping": &graphql.Field{
 			Type:        PingType,
 			Description: "health check",
@@ -38,33 +32,36 @@ var Query = graphql.NewObject(graphql.ObjectConfig{
 
 			},
 		},
-
-		"admin": &graphql.Field{
-			Type: admin.TypeAdmin,
-			Args: graphql.FieldConfigArgument{
-				"id": &graphql.ArgumentConfig{
-					Description: "id of admin",
-					Type:        graphql.NewNonNull(graphql.ID),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				id := p.Args["id"]
-				ID, _ := strconv.Atoi(id.(string))
-				if ID == 0 {
-					return model.DefaultAdmin()
-				}
-				result, err := model.GetAdmin(int64(ID))
-				if err != nil {
-					return nil, err
-				} else {
-					return result, err
-				}
-			},
-		},
 	},
 })
 
 func init() {
+	Query.AddFieldConfig("admin", &graphql.Field{
+		Type: admin.TypeAdmin,
+		Args: graphql.FieldConfigArgument{
+			"id": &graphql.ArgumentConfig{
+				Description: "id of admin",
+				Type:        graphql.NewNonNull(graphql.ID),
+			},
+		},
+		Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+			id := p.Args["id"]
+			ID := assistance.ToInt64(id)
+			if ID == 0 {
+				return model.DefaultAdmin()
+			}
+			result, err := model.GetAdmin(int64(ID))
+			if err != nil {
+				return nil, err
+			} else {
+				return result, err
+			}
+		},
+	})
+}
+
+func init() {
+
 	Query.AddFieldConfig("address", &graphql.Field{
 		Type: graphql.NewList(address.TypeAddress),
 		Args: graphql.FieldConfigArgument{
@@ -79,23 +76,25 @@ func init() {
 			return model.GetAddresses(ID)
 		},
 	})
-	Query.AddFieldConfig("lotteries", &graphql.Field{
-		Type: graphql.NewNonNull(graphql.NewList(lottery.TypeLottery)),
-		Args: graphql.FieldConfigArgument{
-			"ownerId": &graphql.ArgumentConfig{
-				Description: "id of admin",
-				Type:        graphql.NewNonNull(graphql.ID),
-			},
-		},
-		Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-			id := p.Args["ownerId"]
-			ID := assistance.ToInt64(id)
-			return model.ListLottery(ID)
-		},
-	})
+}
 
+func init() {
+	//Query.AddFieldConfig("lotteries", &graphql.Field{
+	//	Type: graphql.NewNonNull(graphql.NewList(lottery.TypeLottery)),
+	//	Args: graphql.FieldConfigArgument{
+	//		"ownerId": &graphql.ArgumentConfig{
+	//			Description: "id of admin",
+	//			Type:        graphql.NewNonNull(graphql.ID),
+	//		},
+	//	},
+	//	Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+	//		id := p.Args["ownerId"]
+	//		ID := assistance.ToInt64(id)
+	//		return model.ListLottery(ID)
+	//	},
+	//})
 	//Query.AddFieldConfig("lottery", &graphql.Field{
-	//	Type: lottery.Lottery,
+	//	Type: lottery.TypeLottery,
 	//	Args: graphql.FieldConfigArgument{
 	//		"id": &graphql.ArgumentConfig{
 	//			Description: "id of lottery",
@@ -108,7 +107,7 @@ func init() {
 	//	},
 	//})
 	//Query.AddFieldConfig("involvements", &graphql.Field{
-	//	Type: graphql.NewNonNull(graphql.NewList(lottery.Lottery)),
+	//	Type: graphql.NewNonNull(graphql.NewList(lottery.TypeLottery)),
 	//	Args: graphql.FieldConfigArgument{
 	//		"adminId": &graphql.ArgumentConfig{
 	//			Description: "id of admin",

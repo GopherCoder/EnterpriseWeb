@@ -8,24 +8,21 @@ import (
 	"time"
 )
 
-func DefaultAdmin() (*Admin, error) {
-	return &Admin{
-		Base: Base{
-			Id:        1,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-			DeletedAt: nil,
-		},
-		Name:     "Graph",
-		Phone:    "18717711819",
-		Password: "1871771819password",
-		Token:    "18717711819token",
+func DefaultAdmin() (*AdminSerializer, error) {
+	return &AdminSerializer{
+		Id:        1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      "GraphQL",
+		Phone:     "18717711819",
+		Token:     "18717711819token",
 	}, nil
 }
 
-func GetAdmin(id int64) (*Admin, error) {
-	var result Admin
-	if has, err := database.Engine.ID(id).Get(&result); !has || err != nil {
+func GetAdmin(id int64) (*AdminSerializer, error) {
+	var admin Admin
+	var result AdminSerializer
+	if has, err := database.Engine.ID(id).Get(&admin); !has || err != nil {
 		if !has {
 			log_for_lottery.Println("record not found")
 			return &result, fmt.Errorf("record not found")
@@ -35,25 +32,42 @@ func GetAdmin(id int64) (*Admin, error) {
 			return &result, err
 		}
 	}
+	result = admin.Serializer()
 	return &result, nil
 }
 
-func CreateAdmin(phone string, password string) (*Admin, error) {
-	var result Admin
-	secret, _ := assistance.GenerateFromPassword(password)
+func Login(params LoginParam) (*AdminSerializer, error) {
+	var admin Admin
+	if has, err := database.Engine.Where("phone = ?", params.Phone).Get(&admin); !has || err != nil {
+		return nil, err
+	}
+	if ok := assistance.CompareHashAndPassword([]byte(admin.Password), []byte(params.Password)); !ok {
+		return nil, fmt.Errorf("password fail")
+	}
+	var result AdminSerializer
+	result = admin.Serializer()
+	return &result, nil
+}
+
+func CreateAdmin(params LoginParam) (*AdminSerializer, error) {
+	var admin Admin
+	var result AdminSerializer
+	secret, _ := assistance.GenerateFromPassword(params.Password)
 	token := assistance.GenerateToken(10)
-	result = Admin{
+	admin = Admin{
 		Password: string(secret),
 		Token:    token,
-		Phone:    phone,
+		Phone:    params.Phone,
+		Name:     params.Password,
 	}
 	tx := database.Engine.NewSession()
 	tx.Begin()
-	_, err := tx.InsertOne(&result)
+	_, err := tx.InsertOne(&admin)
 	if err != nil {
 		tx.Rollback()
-		return &result, err
+		return nil, err
 	}
 	tx.Commit()
+	result = admin.Serializer()
 	return &result, nil
 }

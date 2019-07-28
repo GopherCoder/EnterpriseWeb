@@ -8,15 +8,21 @@ type Query {
 }
 
 type Mutation {
-    login(phone: String!,password:String!): Boolean!
+    login(phone: String!,password:String!): Admin!
     sign(phone: String!, password: String!): Admin!
-
-    createLottery(name:String!, imageUrl: String, levels: [Level], deadline: Time, winnerCondition: ID!, class: Int
-        limit: Int): Lottery!
-    updatedLottery(name:String!, limit: Int): Lottery
-
     createAddress(adminId: ID!, detail: String): Address
     updateAddress(adminID: ID!, detail: String): Address
+
+    createLottery(
+        levels: [Level]!,
+        deadline: DateTime!,
+        winnerCondition: ID!,
+        lotteryClass: Int!
+        limit: Int): Lottery!
+
+    updatedLottery(name:String!, limit: Int): Lottery
+
+
 
 
 }
@@ -41,11 +47,12 @@ type Admin {
 type Address {
     id: ID!
     detail: String
+    adminId: ID!
+    adminName: String!
 }
 
 type Lottery {
     id: ID!
-    imgaeUrl: String
     deadline: Time
     levels: [Level]!
     class: Int
@@ -57,10 +64,11 @@ type Lottery {
     participant: [Admin] # 参与者
 }
 
-scalar Time
+scalar DateTime
 
 type Level {
     id: ID!
+    imageUrl: String!
     name: String!
     number: Int
     class: Int

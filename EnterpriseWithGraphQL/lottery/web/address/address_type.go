@@ -14,7 +14,7 @@ var TypeAddress = graphql.NewObject(graphql.ObjectConfig{
 			Name: "id",
 			Type: graphql.NewNonNull(graphql.ID),
 			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				if address, ok := p.Source.(*model.Address); ok {
+				if address, ok := p.Source.(*model.AddressSerialize); ok {
 					return address.Id, nil
 				}
 				return nil, fmt.Errorf("field not found")
@@ -24,8 +24,28 @@ var TypeAddress = graphql.NewObject(graphql.ObjectConfig{
 			Name: "detail",
 			Type: graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
-				if address, ok := p.Source.(*model.Address); ok {
+				if address, ok := p.Source.(*model.AddressSerialize); ok {
 					return address.Detail, nil
+				}
+				return nil, fmt.Errorf("field not found")
+			},
+		},
+		"adminId": &graphql.Field{
+			Name: "adminId",
+			Type: graphql.ID,
+			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+				if address, ok := p.Source.(*model.AddressSerialize); ok {
+					return address.AdminId, nil
+				}
+				return nil, fmt.Errorf("field not found")
+			},
+		},
+		"adminName": &graphql.Field{
+			Name: "adminName",
+			Type: graphql.String,
+			Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+				if address, ok := p.Source.(*model.AddressSerialize); ok {
+					return address.AdminName, nil
 				}
 				return nil, fmt.Errorf("field not found")
 			},
