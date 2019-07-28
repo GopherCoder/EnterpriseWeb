@@ -1,28 +1,90 @@
-
-
 type Query {
+    ping(hello: String!) : Ping
     admin(id: ID!): Admin
-    lottery(admin_id: ID!): Lottery
-    admin(id: ID!): Lotteries
-
+    address(adminId: ID!): [Address]
+    lotteries(ownerId: ID!): [Lottery]
+    lottery(id: ID!): Lottery
+    involvements(adminId: ID!): [Lottery]
 }
 
 type Mutation {
+    login(phone: String!,password:String!): Boolean!
+    sign(phone: String!, password: String!): Admin!
+
+    createLottery(name:String!, imageUrl: String, levels: [Level], deadline: Time, winnerCondition: ID!, class: Int
+        limit: Int): Lottery!
+    updatedLottery(name:String!, limit: Int): Lottery
+
+    createAddress(adminId: ID!, detail: String): Address
+    updateAddress(adminID: ID!, detail: String): Address
+
+
+}
+
+type Ping {
+    data: String
+    code: Int
 }
 
 type Admin {
-    id: ID
+    id: ID!
+    name: String!
     phone: String!
-    passwd: String!
     token: String!
+
+    lotteries: [Lottery] # 中奖
+    involements: [Lottery] # 参与
+    adressess: [Address] # 地址
+
+}
+
+type Address {
+    id: ID!
+    detail: String
 }
 
 type Lottery {
-    id: ID
+    id: ID!
+    imgaeUrl: String
+    deadline: Time
+    levels: [Level]!
+    class: Int
+    number: Int
+    limit: Int
+
+    winner: [Admin] # 中奖者
+    owner: Admin # 发起者
+    participant: [Admin] # 参与者
 }
 
-type Lotteries {
-    List: [Lottery]!
+scalar Time
+
+type Level {
+    id: ID!
+    name: String!
+    number: Int
+    class: Int
 }
 
+enum LevelClass {
+    FIRST
+    SECOND
+    THIRD
+    FOURTH
+    FIFTH
+    SIXTH
+}
+
+
+type WinnerLottery {
+    id: ID!
+    description: String!
+    class: Int!
+}
+
+enum WinnerName {
+    TIMELEVEL
+    PERSONLEVEL
+    NOWLEVEL
+}
 
