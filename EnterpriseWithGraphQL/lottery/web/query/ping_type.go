@@ -23,7 +23,7 @@ func makePing(data string) Ping {
 	}
 }
 
-var PingType = graphql.NewObject(graphql.ObjectConfig{
+var TypePing = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Ping",
 	Fields: graphql.Fields{
 		"data": &graphql.Field{

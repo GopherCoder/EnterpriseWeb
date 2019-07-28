@@ -10,18 +10,13 @@ type Query {
 type Mutation {
     login(phone: String!,password:String!): Admin!
     sign(phone: String!, password: String!): Admin!
+
     createAddress(adminId: ID!, detail: String): Address
     updateAddress(adminID: ID!, detail: String): Address
 
-    createLottery(
-        levels: [Level]!,
-        deadline: DateTime!,
-        winnerConditionId: ID!,
-        lotteryClass: Int!,
-        limit: Int): Lottery!
-
+    createLottery(levels: [Level]!, deadline: DateTime!,winnerConditionId: ID!,lotteryClass: LevelClass,limit: Int): Lottery!
     updatedLottery(name:String!, limit: Int): Lottery
-
+    takePartIn(lottertId:ID!, adminId:ID): Boolean
 
 
 
@@ -37,11 +32,6 @@ type Admin {
     name: String!
     phone: String!
     token: String!
-
-    lotteries: [Lottery] # 中奖
-    involements: [Lottery] # 参与
-    adressess: [Address] # 地址
-
 }
 
 type Address {
@@ -51,19 +41,24 @@ type Address {
     adminName: String!
 }
 
+enum LotteryClass {
+    NORMAL
+    JOKE
+    HIGH
+    HOMEPAGE
+    LUCKY
+}
+
 type Lottery {
     id: ID!
-    deadline: Time
+    deadline: String
     levels: [Level]!
-    class: Int
+    class: String
     number: Int
     limit: Int
-    WinnerLotteryId: ID!
-    adminId: ID!
+    WinnerLotteryName: String
+    adminName: String
 
-    winner: [Admin] # 中奖者
-    owner: Admin # 发起者
-    participant: [Admin] # 参与者
 }
 
 scalar DateTime
@@ -73,7 +68,7 @@ type Level {
     imageUrl: String!
     name: String!
     number: Int
-    class: Int
+    class: LevelClass
 }
 
 enum LevelClass {
@@ -89,10 +84,10 @@ enum LevelClass {
 type WinnerLottery {
     id: ID!
     description: String!
-    class: Int!
+    class: WinnerCondition
 }
 
-enum WinnerName {
+enum WinnerCondition {
     TIMELEVEL
     PERSONLEVEL
     NOWLEVEL

@@ -149,7 +149,12 @@ union  Search = A | B | C
 
 - 定义 type (同时定义 model)
 - 开发：定义 schema、type（field, args, Resolve)
+- 字段定义命名格式
+    - schema type: 驼峰式`adminId` --> Fields
+    - 参数：驼峰式 --> args
+    - json 序列化，依旧驼峰式
 
+ 
 
 ## 问题
 

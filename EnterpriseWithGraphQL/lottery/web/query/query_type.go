@@ -5,6 +5,7 @@ import (
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/address"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/admin"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/model"
+	"log"
 
 	"github.com/graphql-go/graphql"
 )
@@ -14,7 +15,7 @@ var Query = graphql.NewObject(graphql.ObjectConfig{
 	Description: "Query",
 	Fields: graphql.Fields{
 		"ping": &graphql.Field{
-			Type:        PingType,
+			Type:        TypePing,
 			Description: "health check",
 			Args: graphql.FieldConfigArgument{
 				"data": &graphql.ArgumentConfig{
@@ -69,11 +70,26 @@ func init() {
 				Description: "id of admin",
 				Type:        graphql.NewNonNull(graphql.ID),
 			},
+			"orderBy": &graphql.ArgumentConfig{
+				Description: "order by id desc",
+				Type:        graphql.String,
+			},
+			"limit": &graphql.ArgumentConfig{
+				Description: "limit",
+				Type:        graphql.Int,
+			},
+			"offset": &graphql.ArgumentConfig{
+				Description: "offset",
+				Type:        graphql.Int,
+			},
 		},
 		Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
+
+			log.Println(p.Args)
 			id := p.Args["adminId"]
 			ID := assistance.ToInt64(id)
-			return model.GetAddresses(ID)
+			orderBy := p.Args["orderBy"].(string)
+			return model.GetAddresses(ID, orderBy)
 		},
 	})
 }

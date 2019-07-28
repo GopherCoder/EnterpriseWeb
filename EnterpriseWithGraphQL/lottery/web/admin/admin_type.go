@@ -49,5 +49,5 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 })
 
 func init() {
-	//Admin.AddFieldConfig("", &graphql.Field{})
+
 }

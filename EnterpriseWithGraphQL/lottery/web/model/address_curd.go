@@ -5,10 +5,13 @@ import (
 	"fmt"
 )
 
-func GetAddresses(adminID int64) ([]*AddressSerialize, error) {
+func GetAddresses(adminID int64, orderBy string) ([]*AddressSerialize, error) {
 	var addresses []Address
 	var results []*AddressSerialize
-	if dbError := database.Engine.ID(adminID).Find(&addresses); dbError != nil {
+	if orderBy == "" {
+		orderBy = "created_at"
+	}
+	if dbError := database.Engine.ID(adminID).Desc(orderBy).Find(&addresses); dbError != nil {
 		return results, dbError
 	}
 	for _, i := range addresses {
