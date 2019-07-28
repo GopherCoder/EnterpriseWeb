@@ -16,8 +16,8 @@ type Mutation {
     createLottery(
         levels: [Level]!,
         deadline: DateTime!,
-        winnerCondition: ID!,
-        lotteryClass: Int!
+        winnerConditionId: ID!,
+        lotteryClass: Int!,
         limit: Int): Lottery!
 
     updatedLottery(name:String!, limit: Int): Lottery
@@ -58,6 +58,8 @@ type Lottery {
     class: Int
     number: Int
     limit: Int
+    WinnerLotteryId: ID!
+    adminId: ID!
 
     winner: [Admin] # 中奖者
     owner: Admin # 发起者

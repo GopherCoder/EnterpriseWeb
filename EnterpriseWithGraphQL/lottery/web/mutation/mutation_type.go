@@ -7,6 +7,7 @@ import (
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/level"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/lottery"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/model"
+	"log"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -149,7 +150,7 @@ func init() {
 				Type: graphql.NewNonNull(graphql.NewList(level.TypeLevel)),
 			},
 			"deadline": &graphql.ArgumentConfig{
-				Type: graphql.NewNonNull(graphql.DateTime),
+				Type: graphql.DateTime,
 			},
 			"winnerConditionId": &graphql.ArgumentConfig{
 				Type: graphql.NewNonNull(graphql.Int),
@@ -166,9 +167,16 @@ func init() {
 		},
 		Resolve: func(p graphql.ResolveParams) (i interface{}, e error) {
 			var params model.CreateLotteryParams
+			var deadline time.Time
+			log.Println(p.Args)
+			if p.Args["deadline"].(string) == "" {
+				now := time.Now()
+				deadline = now.AddDate(0, 0, 1)
+			}
+
 			params = model.CreateLotteryParams{
 				Levels:                 p.Args["levels"].([]model.LevelsParams),
-				Deadline:               p.Args["deadline"].(time.Time),
+				Deadline:               deadline,
 				WinnerLotteryCondition: assistance.ToInt64(p.Args["LevelsParams"]),
 				LotteryClass:           assistance.ToInt(p.Args["class"]),
 				Limit:                  assistance.ToInt(p.Args["limit"]),
