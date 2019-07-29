@@ -31,12 +31,12 @@ func init() {
 type Lottery struct {
 	Base            `xorm:"extends"`
 	Deadline        time.Time `json:"deadline"`
-	Levels          []Level   `json:"levels"`
-	WinnerLotteryId int64     `xorm:"index" json:"winner_lottery_id"`
+	Levels          []int64   `json:"levels"`
+	WinnerLotteryId int64     `xorm:"index 'winner_lottery_id'" json:"winner_lottery_id"`
 	Class           int       `json:"class"`
 	Number          int       `json:"number"`
 	Limit           int       `json:"limit"`
-	AdminID         int64     `xorm:"index" json:"admin_id"`
+	AdminID         int64     `xorm:"index 'admin_id'" json:"admin_id"`
 }
 
 func (L Lottery) TableName() string {
@@ -47,10 +47,11 @@ type LotterySerializer struct {
 	Id                int64              `json:"id"`
 	CreatedAt         time.Time          `json:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at"`
-	DeadLine          string             `json:"dead_line"`
+	Deadline          string             `json:"deadline"`
 	Levels            []*LevelSerializer `json:"levels"`
 	WinnerLotteryName string             `json:"winner_lottery_name"`
-	Class             string             `json:"class"`
+	Class             int                `json:"class"`
+	ClassString       string             `json:"class_string"`
 	Number            int                `json:"number"`
 	Limit             int                `json:"limit"`
 	AdminName         string             `json:"admin_name"`
@@ -59,7 +60,9 @@ type LotterySerializer struct {
 func (L Lottery) Serializer() *LotterySerializer {
 	var levels []*LevelSerializer
 	for _, i := range L.Levels {
-		levels = append(levels, i.Serializer())
+		var one Level
+		database.Engine.ID(i).Get(&one)
+		levels = append(levels, one.Serializer())
 	}
 	var winnerLottery WinnerLottery
 	if has, dbError := database.Engine.ID(L.WinnerLotteryId).Get(&winnerLottery); !has || dbError != nil {
@@ -74,10 +77,11 @@ func (L Lottery) Serializer() *LotterySerializer {
 		Id:                L.Id,
 		CreatedAt:         L.CreatedAt.Truncate(time.Second),
 		UpdatedAt:         L.UpdatedAt.Truncate(time.Second),
-		DeadLine:          L.Deadline.Format(time.RFC3339),
+		Deadline:          L.Deadline.Format(time.RFC3339),
 		Levels:            levels,
 		WinnerLotteryName: WinnerCondition[winnerLottery.Class],
-		Class:             LotteryClass[L.Class],
+		ClassString:       LotteryClass[L.Class],
+		Class:             L.Class,
 		Number:            L.Number,
 		Limit:             L.Limit,
 		AdminName:         admin.Name,
@@ -94,10 +98,11 @@ const (
 	SIXTH
 )
 
-var Prize = make(map[int]string)
+var Prize = map[int]string{}
 
 func init() {
-	Prize[FIFTH] = "一等奖"
+	Prize = make(map[int]string)
+	Prize[FIRST] = "一等奖"
 	Prize[SECOND] = "二等奖"
 	Prize[THIRD] = "三等奖"
 	Prize[FOURTH] = "四等奖"
@@ -108,7 +113,7 @@ func init() {
 type Level struct {
 	Base     `xorm:"extends"`
 	Name     string `json:"name"`
-	ImageURL string `json:"image_url"`
+	ImageURL string `xorm:"'image_url'"json:"image_url"`
 	Number   int    `json:"number"`
 	Class    int    `json:"class"`
 }
@@ -118,24 +123,26 @@ func (L Level) TableName() string {
 }
 
 type LevelSerializer struct {
-	Id        int64     `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	ImageURL  string    `json:"image_url"`
-	Name      string    `json:"name"`
-	Number    int       `json:"number"`
-	Class     string    `json:"class"`
+	Id          int64     `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	ImageURL    string    `json:"image_url"`
+	Name        string    `json:"name"`
+	Number      int       `json:"number"`
+	Class       int       `json:"class"`
+	ClassString string    `json:"class_string"`
 }
 
 func (L Level) Serializer() *LevelSerializer {
 	return &LevelSerializer{
-		Id:        L.Id,
-		CreatedAt: L.CreatedAt,
-		UpdatedAt: L.UpdatedAt,
-		ImageURL:  L.ImageURL,
-		Name:      L.Name,
-		Number:    L.Number,
-		Class:     Prize[L.Class],
+		Id:          L.Id,
+		CreatedAt:   L.CreatedAt,
+		UpdatedAt:   L.UpdatedAt,
+		ImageURL:    L.ImageURL,
+		Name:        L.Name,
+		Number:      L.Number,
+		Class:       L.Class,
+		ClassString: Prize[L.Class],
 	}
 }
 
@@ -184,7 +191,8 @@ type WinnerLotterySerializer struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	Description string    `json:"description"`
-	Class       string    `json:"class"`
+	Class       int       `json:"class"`
+	ClassString string    `json:"class_string"`
 }
 
 func (W WinnerLottery) Serializer() *WinnerLotterySerializer {
@@ -193,6 +201,7 @@ func (W WinnerLottery) Serializer() *WinnerLotterySerializer {
 		CreatedAt:   W.CreatedAt,
 		UpdatedAt:   W.UpdatedAt,
 		Description: W.Description,
-		Class:       WinnerCondition[W.Class],
+		Class:       W.Class,
+		ClassString: WinnerCondition[W.Class],
 	}
 }

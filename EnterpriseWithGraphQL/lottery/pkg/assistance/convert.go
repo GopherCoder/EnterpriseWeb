@@ -9,3 +9,7 @@ func ToInt64(i interface{}) int64 {
 func ToInt(i interface{}) int {
 	return int(ToInt64(i))
 }
+
+func ToString(i interface{}) string {
+	return i.(string)
+}

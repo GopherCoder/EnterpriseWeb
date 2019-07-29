@@ -10,14 +10,14 @@ type Query {
 type Mutation {
     login(phone: String!,password:String!): Admin!
     sign(phone: String!, password: String!): Admin!
+    updateAdmin(adminId: ID!, name: String): Admin
 
     createAddress(adminId: ID!, detail: String): Address
-    updateAddress(adminID: ID!, detail: String): Address
+    updateAddress(Id: ID!, detail: String): Address
 
-    createLottery(levels: [Level]!, deadline: DateTime!,winnerConditionId: ID!,lotteryClass: LevelClass,limit: Int): Lottery!
+    createLottery(levels: [LevelsInput]!, deadline: DateTime!,winnerConditionId: ID!,lotteryClass: LevelClass,limit: Int): Lottery!
     updatedLottery(name:String!, limit: Int): Lottery
-    takePartIn(lottertId:ID!, adminId:ID): Boolean
-
+    takePartIn(lottertId:ID!, adminId:ID): Lottery
 
 
 }
@@ -56,7 +56,7 @@ type Lottery {
     class: String
     number: Int
     limit: Int
-    WinnerLotteryName: String
+    winnerLotteryName: String
     adminName: String
 
 }
@@ -93,3 +93,11 @@ enum WinnerCondition {
     NOWLEVEL
 }
 
+
+input LevelsInput {
+    name: String
+    number: Int
+    imageURL: String
+    class: WinnerCondition
+
+}

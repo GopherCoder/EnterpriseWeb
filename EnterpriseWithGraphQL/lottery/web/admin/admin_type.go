@@ -47,7 +47,3 @@ var TypeAdmin = graphql.NewObject(graphql.ObjectConfig{
 		},
 	},
 })
-
-func init() {
-
-}

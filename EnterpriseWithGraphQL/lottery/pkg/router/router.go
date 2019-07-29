@@ -1,6 +1,7 @@
 package router
 
 import (
+	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/pkg/log"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/mutation"
 	"EnterpriseWeb/EnterpriseWithGraphQL/lottery/web/query"
 	"encoding/json"
@@ -23,8 +24,8 @@ func handler(schema graphql.Schema) http.HandlerFunc {
 		})
 
 		message := fmt.Sprintf("%s | %s | %s | %s", request.Method, request.Host, request.RequestURI, time.Now().Format(time.RFC3339))
-		log.Println(string(opts.Query))
-		log.Println(fmt.Sprintf("\x1b[31m%s\x1b[0m", message))
+		log_for_lottery.Println(string(opts.Query))
+		log_for_lottery.Println(message)
 
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)

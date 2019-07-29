@@ -7,5 +7,5 @@ func Red(message string) string {
 }
 
 func RedM(message ...interface{}) string {
-	return fmt.Sprintf("\x1b[31m%v\x1b[0m", message)
+	return fmt.Sprintf("\x1b[31m%v\x1b[0m", message...)
 }

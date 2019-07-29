@@ -35,6 +35,8 @@ func MySQLInit() {
 	l.SetLevel(core.LOG_INFO)
 	Engine.SetLogger(l)
 	Engine.ShowSQL(true)
+	Engine.SetMapper(core.GonicMapper{})
+	Engine.SetTableMapper(core.GonicMapper{})
 }
 
 func CustomerLogger(out io.Writer) *xorm.SimpleLogger {
