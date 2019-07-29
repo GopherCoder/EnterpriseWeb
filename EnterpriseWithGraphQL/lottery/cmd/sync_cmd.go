@@ -28,7 +28,6 @@ func Run() {
 		new(model.Address),
 		new(model.Lottery),
 		new(model.Admin2Lottery),
-		new(model.AdminTakePart),
 		new(model.WinnerLottery),
 		new(model.Level),
 	}
