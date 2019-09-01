@@ -29,7 +29,7 @@
 - 税后工资计算器：http://hizdm.cn/
 - 你包我答: 解决题库问题
 ## Doing
-- [ ] 11.税后工资计算器
+- [ ] ~~11.税后工资计算器~~
 ## Done
 
 - [x] 8.目标笔记 --> EnterpriseWithEcho(echo 框架)
@@ -38,3 +38,4 @@
 
 - [x] 7.腾讯投票 --> EnterpriseWithHTTP(原生 net/http)
 
+- [x] 3.抽奖助手 --> EnterpriseWithGraphQL(graphql-go)
